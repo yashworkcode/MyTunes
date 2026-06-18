@@ -67,3 +67,22 @@ async function doRegister() {
     setLoading(btn, false, 'Create Account');
   }
 }
+
+// ✅ ATTACH EVENT LISTENERS SAFELY IN THIS EXTERNAL FILE
+document.addEventListener("DOMContentLoaded", () => {
+  // Tabs switching
+  qs('#tab-login').addEventListener('click', () => switchTab('login'));
+  qs('#tab-register').addEventListener('click', () => switchTab('register'));
+  
+  // Footer text links switching
+  qs('#register-link').addEventListener('click', (e) => { e.preventDefault(); switchTab('register'); });
+  qs('#login-link').addEventListener('click', (e) => { e.preventDefault(); switchTab('login'); });
+
+  // Submission buttons
+  qs('#login-btn').addEventListener('click', doLogin);
+  qs('#register-btn').addEventListener('click', doRegister);
+
+  // Enter key behaviors
+  qs('#login-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+  qs('#reg-pass2').addEventListener('keydown', (e) => { if (e.key === 'Enter') doRegister(); });
+});
