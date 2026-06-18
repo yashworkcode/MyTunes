@@ -35,44 +35,55 @@
 
       <div id="auth-err" class="login-err"></div>
 
-      <!-- Login fields -->
-      <div id="login-fields">
-        <div class="login-field">
-          <label>Email</label>
-          <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
-        </div>
-        <div class="login-field">
-          <label>Password</label>
-          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"
-                 onkeydown="if(event.key==='Enter')doLogin()" />
-        </div>
-        <button class="login-submit" id="login-btn" onclick="doLogin()">Sign In</button>
-        <div class="login-footer">Don't have an account? <a href="#" onclick="switchTab('register');return false" style="color:var(--accent)">Register</a></div>
-      </div>
+<!-- Login fields -->
+<div id="login-fields">
+  <div class="login-field">
+    <label>Email</label>
+    <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
+  </div>
 
-      <!-- Register fields -->
-      <div id="register-fields" class="hidden">
-        <div class="login-field">
-          <label>Username</label>
-          <input id="reg-user" type="text" placeholder="e.g. music_lover42" autocomplete="off" />
-        </div>
-        <div class="login-field">
-          <label>Email</label>
-          <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" />
-        </div>
-        <div class="login-field">
-          <label>Password</label>
-          <input id="reg-pass" type="password" placeholder="at least 6 characters" />
-        </div>
-        <div class="login-field">
-          <label>Confirm Password</label>
-          <input id="reg-pass2" type="password" placeholder="repeat password"
-                 onkeydown="if(event.key==='Enter')doRegister()" />
-        </div>
-        <button class="login-submit" id="register-btn" onclick="doRegister()">Create Account</button>
-        <div class="login-footer">Already have an account? <a href="#" onclick="switchTab('login');return false" style="color:var(--accent)">Sign In</a></div>
-      </div>
-    </div>
+  <div class="login-field">
+    <label>Password</label>
+    <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+  </div>
+
+  <button class="login-submit" id="login-btn">Sign In</button>
+
+  <div class="login-footer">
+    Don't have an account?
+    <a href="#" id="register-link" style="color:var(--accent)">Register</a>
+  </div>
+</div>
+
+<!-- Register fields -->
+<div id="register-fields" class="hidden">
+  <div class="login-field">
+    <label>Username</label>
+    <input id="reg-user" type="text" placeholder="e.g. music_lover42" autocomplete="off" />
+  </div>
+
+  <div class="login-field">
+    <label>Email</label>
+    <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" />
+  </div>
+
+  <div class="login-field">
+    <label>Password</label>
+    <input id="reg-pass" type="password" placeholder="at least 6 characters" />
+  </div>
+
+  <div class="login-field">
+    <label>Confirm Password</label>
+    <input id="reg-pass2" type="password" placeholder="repeat password" />
+  </div>
+
+  <button class="login-submit" id="register-btn">Create Account</button>
+
+  <div class="login-footer">
+    Already have an account?
+    <a href="#" id="login-link" style="color:var(--accent)">Sign In</a>
+  </div>
+</div>
 
   </div>
 
@@ -81,5 +92,57 @@
   <script src="../js/utils.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const loginBtn = document.getElementById("login-btn");
+  const registerBtn = document.getElementById("register-btn");
+
+  const registerLink = document.getElementById("register-link");
+  const loginLink = document.getElementById("login-link");
+
+  const pass = document.getElementById("login-pass");
+  const regPass2 = document.getElementById("reg-pass2");
+
+  function doLogin() {
+    console.log("Login clicked");
+    // your login API code here
+  }
+
+  function doRegister() {
+    console.log("Register clicked");
+    // your register API code here
+  }
+
+  function switchTab(tab) {
+    console.log("Switch tab:", tab);
+
+    document.getElementById("login-fields").classList.toggle("hidden", tab !== "login");
+    document.getElementById("register-fields").classList.toggle("hidden", tab !== "register");
+  }
+
+  loginBtn.addEventListener("click", doLogin);
+  registerBtn.addEventListener("click", doRegister);
+
+  registerLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchTab("register");
+  });
+
+  loginLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchTab("login");
+  });
+
+  pass.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doLogin();
+  });
+
+  regPass2.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doRegister();
+  });
+
+});
+</script>
 </body>
 </html>
