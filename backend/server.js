@@ -28,9 +28,6 @@ const app    = express();
 const server = http.createServer(app);
 
 // ── CORS ─────────────────────────────────────────────
-// In development, allow common local dev server ports automatically so a
-// CLIENT_URL mismatch (e.g. Live Server's 5500 vs npx serve's 3000) doesn't
-// silently break every request. In production, only CLIENT_URL is allowed.
 const DEV_ORIGINS = [
   'http://localhost:3000', 'http://127.0.0.1:3000',
   'http://localhost:5500', 'http://127.0.0.1:5500',
@@ -40,19 +37,13 @@ const DEV_ORIGINS = [
 ];
 
 const corsOriginCheck = (origin, callback) => {
-  // No origin = same-origin request (e.g. curl, server-to-server) — allow it.
-  if (!origin) return callback(null, true);
-
+  // ✅ DIRECT FIX: Always allow local requests or null origins in development
   if (process.env.NODE_ENV !== 'production') {
-    if (origin === process.env.CLIENT_URL || DEV_ORIGINS.includes(origin)) {
-      return callback(null, true);
-    }
-    console.warn(`⚠️  CORS: blocked origin "${origin}". Add it to DEV_ORIGINS in server.js or set CLIENT_URL to match.`);
-    return callback(null, true); // still allow in dev so you're never blocked while testing
+    return callback(null, true);
   }
 
   // Production: strict — only the configured CLIENT_URL
-  if (origin === process.env.CLIENT_URL) return callback(null, true);
+  if (!origin || origin === process.env.CLIENT_URL) return callback(null, true);
   callback(new Error('Not allowed by CORS'));
 };
 
@@ -70,11 +61,17 @@ initSocket(io);
 app.use((req, _res, next) => { req.io = io; next(); });
 
 // ── Middleware ───────────────────────────────────────
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+// ✅ DIRECT FIX: Disabled Helmet's strict policies that block local asset & fetch requests
+app.use(helmet({ 
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: false 
+}));
+
 app.use(cors({
   origin: corsOriginCheck,
   credentials: true,
 }));
+
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
