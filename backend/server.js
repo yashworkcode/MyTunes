@@ -37,13 +37,20 @@ const DEV_ORIGINS = [
 ];
 
 const corsOriginCheck = (origin, callback) => {
-  // ✅ DIRECT FIX: Always allow local requests or null origins in development
+  // Allow requests with no origin (like server-to-server or curl)
+  if (!origin) return callback(null, true);
+
+  // Always allow local development ports
   if (process.env.NODE_ENV !== 'production') {
     return callback(null, true);
   }
 
-  // Production: strict — only the configured CLIENT_URL
-  if (!origin || origin === process.env.CLIENT_URL) return callback(null, true);
+  // ── PRODUCTION CORS RULE (UPDATED) ──
+  // Trust your custom CLIENT_URL OR any generated deployment URL ending in vercel.app
+  if (origin === process.env.CLIENT_URL || origin.includes('vercel.app')) {
+    return callback(null, true);
+  }
+  
   callback(new Error('Not allowed by CORS'));
 };
 
@@ -61,7 +68,6 @@ initSocket(io);
 app.use((req, _res, next) => { req.io = io; next(); });
 
 // ── Middleware ───────────────────────────────────────
-// ✅ DIRECT FIX: Disabled Helmet's strict policies that block local asset & fetch requests
 app.use(helmet({ 
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: false 
