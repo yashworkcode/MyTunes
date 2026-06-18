@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyTunes — Playlist</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/app.css" />
+</head>
+<body>
+
+<audio id="audioEl"></audio>
+
+<header id="topbar">
+  <div class="logo" onclick="goTo('home.html')">♪ MyTunes</div>
+  <div style="flex:1"></div>
+  <div class="topbar-right">
+    <button class="tbtn" onclick="goTo('home.html')">🏠 Home</button>
+    <button class="tbtn" onclick="goTo('home.html',{view:'playlists'})">📋 All Playlists</button>
+    <div style="position:relative">
+      <div class="user-chip" id="user-chip" onclick="toggleUserDropdown()"></div>
+      <div class="dropdown" id="user-dropdown">
+        <div class="dropdown-item" onclick="goTo('profile.html')">👤 My Profile</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" onclick="doLogout()">🚪 Log Out</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main style="margin-top:58px;margin-bottom:var(--player-h);padding:24px 22px;max-width:900px">
+  <button class="back-btn" onclick="history.back()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </button>
+
+  <div id="playlist-root">
+    <div class="list-loader"><span class="spinner"></span></div>
+  </div>
+</main>
+
+<div id="player">
+  <div class="pinfo">
+    <div class="pthumb" id="pThumb">🎵</div>
+    <div style="overflow:hidden">
+      <div class="ptitle"  id="pTitle">No song playing</div>
+      <div class="partist" id="pArtist">Pick a song above ↑</div>
+    </div>
+    <span class="plike" id="pLike" onclick="toggleLikeCurrentSong()">♡</span>
+  </div>
+  <div class="pctrl">
+    <div class="pbtns">
+      <button class="pbtn" onclick="Player.prev()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+      </button>
+      <button class="pbtn play-btn" onclick="Player.togglePlay()">
+        <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="pbtn" onclick="Player.next()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+    </div>
+    <div class="prog-row">
+      <span class="ptime" id="curTime">0:00</span>
+      <div class="prog-track" onclick="seekClick(event)"><div class="prog-fill" id="progFill"></div></div>
+      <span class="ptime" id="durTime">0:00</span>
+    </div>
+  </div>
+  <div class="pvol">
+    <input id="volSlider" type="range" class="vol" min="0" max="100" value="80" oninput="Player.setVolume(this.value/100)" />
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/socket.js"></script>
+<script src="../js/player.js"></script>
+<script src="../js/songs.js"></script>
+<script src="../js/playlists.js"></script>
+<script>
+  function toggleUserDropdown() { qs('#user-dropdown').classList.toggle('open'); }
+  async function doLogout() {
+    try { await api.auth.logout(); } catch (_) {}
+    Auth.clearToken(); localStorage.removeItem('mt_user');
+    window.location.href = 'index.html';
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-chip')) qs('#user-dropdown')?.classList.remove('open');
+  });
+  function seekClick(e) { Player.seekTo(e.offsetX / e.currentTarget.offsetWidth); }
+  function updatePlayIcon(playing) {
+    qs('#playIcon').innerHTML = playing
+      ? `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`
+      : `<path d="M8 5v14l11-7z"/>`;
+  }
+
+  let currentPlaylist = null;
+
+  async function loadPlaylistDetail() {
+    const id = getParam('id');
+    if (!id) { qs('#playlist-root').innerHTML = `<div class="empty">No playlist specified.</div>`; return; }
+
+    try {
+      const res = await api.playlists.get(id);
+      currentPlaylist = res.playlist;
+      renderPlaylistDetail(res.playlist, res.isLiked);
+    } catch (err) {
+      qs('#playlist-root').innerHTML = `<div class="empty"><big>😕</big>${escHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderPlaylistDetail(pl, isLiked) {
+    const isOwner = pl.owner._id === currentUser._id;
+    const songs = pl.songs.map(s => s.song).filter(Boolean);
+    lastQueueSongs = songs;
+
+    const cover = pl.coverUrl
+      ? `<div class="playlist-cover" style="width:120px;height:120px;background-image:url('${escHtml(pl.coverUrl)}')"></div>`
+      : `<div class="playlist-cover" style="width:120px;height:120px;font-size:48px">${pl.emoji||'🎵'}</div>`;
+
+    qs('#playlist-root').innerHTML = `
+      <div class="sec-hdr" style="margin-bottom:20px;align-items:flex-start">
+        <div style="display:flex;align-items:center;gap:18px">
+          ${cover}
+          <div>
+            <div class="sec-title" style="margin:0">${escHtml(pl.name)}</div>
+            ${pl.description ? `<div class="muted" style="font-size:13px;margin-top:4px;max-width:400px">${escHtml(pl.description)}</div>` : ''}
+            <div class="playlist-creator" style="margin-top:8px;font-size:12px">
+              ${avatarHTML(pl.owner, 20)}
+              <a href="profile.html?id=${pl.owner._id}" style="color:var(--accent)">${escHtml(pl.owner.username)}</a>
+              · ${songs.length} songs
+              ${pl.visibility === 'private' ? '· 🔒 Private' : '· 🌐 Public'}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          ${songs.length ? `<button class="btn btn-p btn-sm" onclick="Player.setQueue(lastQueueSongs, 0)">▶ Play All</button>` : ''}
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-xs ${isLiked ? 'btn-o' : 'btn-g'}" onclick="togglePlaylistLike('${pl._id}', this)">${isLiked ? `❤️ ${pl.likesCount}` : `🤍 ${pl.likesCount}`}</button>
+            ${isOwner ? `<button class="btn btn-xs btn-d" onclick="deletePlaylistConfirm('${pl._id}')">Delete</button>`
+                      : `<button class="btn btn-xs btn-g" onclick="goTo('messages.html',{with:'${pl.owner._id}'})">💬 Message</button>`}
+          </div>
+        </div>
+      </div>
+      <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span>${isOwner?'✕':''}</span></div>
+      <div id="pl-song-list" class="song-list"></div>`;
+
+    renderSongList(qs('#pl-song-list'), songs, { inPlaylist: isOwner, plId: pl._id, emptyMsg: 'No songs in this playlist yet.' });
+  }
+
+  window.refreshCurrentView = loadPlaylistDetail;
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    if (!requireAuth()) return;
+    currentUser = Auth.getUser();
+    Player.init();
+    Player.onChange((type) => {
+      const song = Player.currentSong();
+      if (type === 'progress') {
+        const audio = Player.audio;
+        if (audio.duration) {
+          qs('#progFill').style.width = (audio.currentTime/audio.duration*100) + '%';
+          qs('#curTime').textContent = fmtTime(audio.currentTime);
+          qs('#durTime').textContent = fmtTime(audio.duration);
+        }
+        return;
+      }
+      if (!song) return;
+      qs('#pThumb').style.backgroundImage = song.coverUrl ? `url('${song.coverUrl}')` : '';
+      qs('#pThumb').textContent = song.coverUrl ? '' : (song.emoji || '🎵');
+      qs('#pTitle').textContent = song.title;
+      qs('#pArtist').textContent = song.artist;
+      updatePlayerLikeIcon(song.likes?.includes(currentUser._id));
+      updatePlayIcon(Player.getState().isPlaying);
+      qsa('.song-row').forEach(row => row.classList.toggle('playing', row.dataset.songId === song._id));
+    });
+    qs('#user-chip').innerHTML = `${avatarHTML(currentUser, 26)}<span>${escHtml(currentUser.username)}</span>`;
+    await loadPlaylistDetail();
+  });
+</script>
+</body>
+</html>

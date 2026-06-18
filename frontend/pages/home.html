@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyTunes</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/app.css" />
+  <link rel="stylesheet" href="../css/calls.css" />
+</head>
+<body>
+
+<audio id="audioEl"></audio>
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <div class="logo" onclick="navigate('home')">♪ MyTunes</div>
+  <div class="srch">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="searchInput" type="text" placeholder="Search songs, artists…" oninput="handleSearchInput(this.value)" />
+  </div>
+  <div class="topbar-right">
+    <button class="tbtn" id="shuffleBtn" onclick="toggleShuffleUI()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+        <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+      </svg>
+      Shuffle
+    </button>
+    <button class="tbtn" onclick="toggleAddForm()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Add Song
+    </button>
+
+    <!-- Notifications -->
+    <div style="position:relative">
+      <button class="icon-btn" id="notif-btn" onclick="toggleNotifPanel()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="icon-badge" id="notif-badge" style="display:none">0</span>
+      </button>
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-panel-hdr">
+          <span>Notifications</span>
+          <button class="btn btn-xs btn-g" onclick="markAllNotifsRead()">Mark all read</button>
+        </div>
+        <div id="notif-list"></div>
+      </div>
+    </div>
+
+    <!-- User chip -->
+    <div style="position:relative">
+      <div class="user-chip" id="user-chip" onclick="toggleUserDropdown()"></div>
+      <div class="dropdown" id="user-dropdown">
+        <div class="dropdown-item" onclick="goTo('profile.html')">👤 My Profile</div>
+        <div class="dropdown-item" onclick="navigate('discover')">🔍 Find People</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" onclick="doLogout()">🚪 Log Out</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sl">Discover</div>
+  <div class="si active" id="nav-home"      onclick="navigate('home')">     <span class="ic">🏠</span> Home</div>
+  <div class="si"        id="nav-fav"       onclick="navigate('favorites')"><span class="ic">❤️</span> Liked Songs</div>
+  <div class="si"        id="nav-recent"    onclick="navigate('recent')">   <span class="ic">🕘</span> Recently Played</div>
+  <div class="si"        id="nav-all"       onclick="navigate('all')">      <span class="ic">🎵</span> All Songs</div>
+  <div class="si"        id="nav-playlists" onclick="navigate('playlists')"><span class="ic">📋</span> Playlists</div>
+  <div class="si"                           onclick="navigate('discover')"><span class="ic">🔍</span> Find People</div>
+  <div class="si"                           onclick="goTo('messages.html')"><span class="ic">💬</span> Messages</div>
+
+  <div class="sl">Mood</div>
+  <div class="si" onclick="navigate('category','romantic')"><span class="ic">💕</span> Romantic</div>
+  <div class="si" onclick="navigate('category','sad')">     <span class="ic">💔</span> Sad</div>
+  <div class="si" onclick="navigate('category','party')">   <span class="ic">🎉</span> Party</div>
+  <div class="si" onclick="navigate('category','devotional')"><span class="ic">🙏</span> Devotional</div>
+
+  <div class="sl">Language</div>
+  <div class="si" onclick="navigate('category','hindi')">  <span class="ic">🇮🇳</span> Hindi</div>
+  <div class="si" onclick="navigate('category','english')"><span class="ic">🇬🇧</span> English</div>
+  <div class="si" onclick="navigate('category','folk')">   <span class="ic">🪗</span> Folk</div>
+
+  <div class="sl">Era</div>
+  <div class="si" onclick="navigate('category','old')"><span class="ic">🕰</span> Old Classics</div>
+  <div class="si" onclick="navigate('category','pop')"><span class="ic">✨</span> Pop / New</div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+
+  <button id="global-back" class="back-btn" onclick="goBack()" style="display:none">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </button>
+
+  <!-- ADD SONG FORM -->
+  <div class="add-form" id="addForm">
+    <h3>➕ Add a New Song</h3>
+    <div class="fg">
+      <div class="ff"><label>Song Title *</label><input id="f-title"  type="text" placeholder="e.g. Tum Hi Ho" /></div>
+      <div class="ff"><label>Artist *</label>    <input id="f-artist" type="text" placeholder="e.g. Arijit Singh" /></div>
+      <div class="ff"><label>Album / Movie</label><input id="f-album" type="text" placeholder="e.g. Aashiqui 2" /></div>
+      <div class="ff">
+        <label>Category *</label>
+        <select id="f-cat">
+          <option value="romantic">💕 Romantic</option>
+          <option value="sad">💔 Sad</option>
+          <option value="old">🕰 Old Classic</option>
+          <option value="hindi">🇮🇳 Hindi</option>
+          <option value="english">🇬🇧 English</option>
+          <option value="party">🎉 Party</option>
+          <option value="devotional">🙏 Devotional</option>
+          <option value="folk">🪗 Folk</option>
+          <option value="pop">✨ Pop / New</option>
+          <option value="other">🎵 Other</option>
+        </select>
+      </div>
+      <div class="ff"><label>Cover Emoji (fallback)</label><input id="f-emoji" type="text" placeholder="🎵" maxlength="4" /></div>
+      <div class="ff"><label>🎵 MP3 / Audio File *</label><input id="f-audio" type="file" accept="audio/*" onchange="handleAudioSelect(this)" /></div>
+      <div class="ff" style="grid-column:1/-1"><label>🖼️ Cover Image (optional)</label><input id="f-cover" type="file" accept="image/*" onchange="handleCoverSelect(this)" /></div>
+    </div>
+    <div class="fa">
+      <button class="btn btn-p" id="add-song-btn" onclick="submitAddSong()">Upload Song</button>
+      <button class="btn btn-g" onclick="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="sec-home" class="hidden">
+    <div class="sec-title">Your Music Space <span class="pill">Home</span></div>
+    <div class="gg">
+      <div class="gc gc-romantic"   onclick="navigate('category','romantic')">💕 Romantic<br><small>Love songs</small></div>
+      <div class="gc gc-old"        onclick="navigate('category','old')">🕰 Old Classics<br><small>Golden era</small></div>
+      <div class="gc gc-sad"        onclick="navigate('category','sad')">💔 Sad<br><small>Feel it all</small></div>
+      <div class="gc gc-english"    onclick="navigate('category','english')">🇬🇧 English<br><small>International</small></div>
+      <div class="gc gc-hindi"      onclick="navigate('category','hindi')">🇮🇳 Hindi<br><small>Desi beats</small></div>
+      <div class="gc gc-party"      onclick="navigate('category','party')">🎉 Party<br><small>Dance floor</small></div>
+      <div class="gc gc-devotional" onclick="navigate('category','devotional')">🙏 Devotional<br><small>Soul &amp; spirit</small></div>
+      <div class="gc gc-folk"       onclick="navigate('category','folk')">🪗 Folk<br><small>Roots music</small></div>
+      <div class="gc gc-pop"        onclick="navigate('category','pop')">✨ Pop / New<br><small>Fresh picks</small></div>
+      <div class="gc gc-playlists"  onclick="navigate('playlists')">📋 Playlists<br><small>Your collections</small></div>
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-title" style="margin:0;font-size:17px">Recently Added</div>
+      <button class="btn btn-g btn-sm" onclick="navigate('all')">See all →</button>
+    </div>
+    <div class="list-hdr"><span></span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="recent-list" class="song-list"></div>
+  </div>
+
+  <!-- ALL SONGS -->
+  <div id="sec-all" class="hidden">
+    <div class="sec-title">All Songs <span class="pill" id="all-count">0</span></div>
+    <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="all-list" class="song-list"></div>
+  </div>
+
+  <!-- CATEGORY -->
+  <div id="sec-category" class="hidden">
+    <div class="sec-title" id="cat-title">Songs</div>
+    <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="cat-list" class="song-list"></div>
+  </div>
+
+  <!-- LIKED SONGS -->
+  <div id="sec-favorites" class="hidden">
+    <div class="sec-title">❤️ Liked Songs <span class="pill" id="fav-count">0</span></div>
+    <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="fav-list" class="song-list"></div>
+  </div>
+
+  <!-- RECENTLY PLAYED -->
+  <div id="sec-recent" class="hidden">
+    <div class="sec-title">🕘 Recently Played</div>
+    <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="recent-played-list" class="song-list"></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="sec-search" class="hidden">
+    <div class="sec-title">Search Results <span class="pill" id="search-count">0</span></div>
+    <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="search-list" class="song-list"></div>
+  </div>
+
+  <!-- PLAYLISTS -->
+  <div id="sec-playlists" class="hidden">
+    <div class="sec-hdr">
+      <div class="sec-title" style="margin:0">📋 Playlists</div>
+      <button class="btn btn-p btn-sm" onclick="openCreatePlaylistModal()">+ New Playlist</button>
+    </div>
+    <div id="pl-all-grid" class="playlist-grid"></div>
+  </div>
+
+  <!-- DISCOVER USERS -->
+  <div id="sec-discover" class="hidden">
+    <div class="sec-title">🔍 Find People</div>
+    <div class="srch" style="max-width:100%;margin-bottom:18px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="discover-search-input" type="text" placeholder="Search by username…" oninput="handleUserSearchInput(this.value)" />
+    </div>
+    <div id="discover-results" class="user-list"></div>
+  </div>
+
+</main>
+
+<!-- PLAYER BAR -->
+<div id="player">
+  <div class="pinfo">
+    <div class="pthumb" id="pThumb">🎵</div>
+    <div style="overflow:hidden">
+      <div class="ptitle"  id="pTitle">No song playing</div>
+      <div class="partist" id="pArtist">Pick a song above ↑</div>
+    </div>
+    <span class="plike" id="pLike" onclick="toggleLikeCurrentSong()">♡</span>
+  </div>
+
+  <div class="pctrl">
+    <div class="pbtns">
+      <button class="pbtn" id="shufflePlayerBtn" onclick="toggleShuffleUI()" title="Shuffle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+        </svg>
+      </button>
+      <button class="pbtn" onclick="Player.prev()" title="Previous">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+      </button>
+      <button class="pbtn play-btn" onclick="Player.togglePlay()">
+        <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="pbtn" onclick="Player.next()" title="Next">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+      <button class="pbtn" id="repeatBtn" onclick="cycleRepeatUI()" title="Repeat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+      </button>
+    </div>
+    <div class="prog-row">
+      <span class="ptime" id="curTime">0:00</span>
+      <div class="prog-track" onclick="seekClick(event)"><div class="prog-fill" id="progFill"></div></div>
+      <span class="ptime" id="durTime">0:00</span>
+    </div>
+  </div>
+
+  <div class="pvol">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    </svg>
+    <input id="volSlider" type="range" class="vol" min="0" max="100" value="80" oninput="Player.setVolume(this.value/100)" />
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- INCOMING CALL BANNER -->
+<div id="incoming-call-banner"></div>
+
+<!-- FULL SCREEN CALL OVERLAY -->
+<div id="call-overlay">
+  <div class="call-stage" id="call-stage"></div>
+  <div class="call-controls" id="call-controls"></div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-create-pl">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCreatePlaylistModal()">✕</button>
+    <h2>✨ New Playlist</h2>
+    <div class="fg" style="grid-template-columns:1fr">
+      <div class="ff"><label>Playlist Name *</label><input id="pl-name" type="text" placeholder="e.g. Chill Vibes" /></div>
+      <div class="ff"><label>Description</label><textarea id="pl-desc" placeholder="What's this playlist about?"></textarea></div>
+      <div class="fg">
+        <div class="ff"><label>Visibility</label>
+          <select id="pl-visibility">
+            <option value="public">🌐 Public — everyone can see &amp; play</option>
+            <option value="private">🔒 Private — only you</option>
+          </select>
+        </div>
+        <div class="ff"><label>Cover Emoji</label><input id="pl-emoji-input" type="text" placeholder="🎵" maxlength="4" /></div>
+      </div>
+      <div class="ff"><label>Cover Image (optional)</label><input id="pl-cover-input" type="file" accept="image/*" onchange="handlePlaylistCoverSelect(this)" /></div>
+    </div>
+    <div class="fa">
+      <button class="btn btn-p" onclick="submitCreatePlaylist()">Create</button>
+      <button class="btn btn-g" onclick="closeCreatePlaylistModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-to-pl">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAddToPlaylistModal()">✕</button>
+    <h2>Add to Playlist</h2>
+    <div id="add-to-pl-list" class="chat-list" style="margin-top:8px;max-height:300px;overflow-y:auto"></div>
+    <div class="fa" style="margin-top:12px">
+      <button class="btn btn-g" onclick="closeAddToPlaylistModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/socket.js"></script>
+<script src="../js/player.js"></script>
+<script src="../js/songs.js"></script>
+<script src="../js/playlists.js"></script>
+<script src="../js/messages.js"></script>
+<script src="../js/calls.js"></script>
+<script src="../js/notifications.js"></script>
+<script src="../js/home.js"></script>
+</body>
+</html>

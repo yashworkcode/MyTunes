@@ -1,0 +1,70 @@
+/* ── INCOMING CALL TOAST ── */
+#incoming-call-banner {
+  position: fixed; top: 70px; right: 20px; z-index: 500;
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 16px; width: 280px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  display: none; animation: slideIn .25s ease;
+}
+#incoming-call-banner.show { display: block; }
+@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.call-banner-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.call-banner-name { font-size: 14px; font-weight: 700; }
+.call-banner-sub  { font-size: 12px; color: var(--muted); }
+.call-banner-btns { display: flex; gap: 8px; }
+.call-banner-btns button {
+  flex: 1; padding: 9px; border-radius: 999px; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.call-accept { background: var(--green); color: #fff; }
+.call-reject { background: var(--red); color: #fff; }
+.ringing-pulse { animation: ringPulse 1s infinite; }
+@keyframes ringPulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* ── FULL-SCREEN CALL OVERLAY ── */
+#call-overlay {
+  display: none; position: fixed; inset: 0; z-index: 600;
+  background: #050608; flex-direction: column;
+}
+#call-overlay.active { display: flex; }
+
+.call-stage {
+  flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 30%, #161827, #050608 70%);
+}
+#remoteVideo {
+  width: 100%; height: 100%; object-fit: cover; background: #000;
+}
+#localVideo {
+  position: absolute; bottom: 110px; right: 24px;
+  width: 160px; height: 120px; border-radius: 12px; object-fit: cover;
+  background: #111; border: 2px solid var(--border2); z-index: 2;
+}
+.voice-call-avatar {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.voice-call-avatar .avatar { width: 120px; height: 120px; font-size: 42px; }
+.voice-call-name { font-size: 22px; font-weight: 700; }
+.voice-call-status { font-size: 14px; color: var(--muted); }
+.call-pulse-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0;
+  animation: pulseRing 2s infinite;
+}
+@keyframes pulseRing { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.6);opacity:0} }
+
+.call-controls {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  padding: 24px; background: rgba(15,16,24,.9); border-top: 1px solid var(--border);
+}
+.call-ctrl-btn {
+  width: 54px; height: 54px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; background: var(--card2);
+  border: 1px solid var(--border2); color: var(--text); font-size: 20px;
+  transition: all var(--tr);
+}
+.call-ctrl-btn:hover { background: var(--card); transform: scale(1.05); }
+.call-ctrl-btn.muted { background: var(--red); color: #fff; border-color: transparent; }
+.call-ctrl-btn.end-call { background: var(--red); color: #fff; border-color: transparent; }
+.call-ctrl-btn.end-call:hover { background: #d63838; }
+.call-duration { position: absolute; top: 20px; left: 24px; font-size: 14px; color: #fff; background: rgba(0,0,0,.4); padding: 6px 14px; border-radius: 999px; }

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyTunes — Profile</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/app.css" />
+</head>
+<body>
+
+<audio id="audioEl"></audio>
+
+<!-- TOPBAR (simplified) -->
+<header id="topbar">
+  <div class="logo" onclick="goTo('home.html')">♪ MyTunes</div>
+  <div style="flex:1"></div>
+  <div class="topbar-right">
+    <button class="tbtn" onclick="goTo('home.html')">🏠 Home</button>
+    <div style="position:relative">
+      <div class="user-chip" id="user-chip" onclick="toggleUserDropdown()"></div>
+      <div class="dropdown" id="user-dropdown">
+        <div class="dropdown-item" onclick="goTo('profile.html')">👤 My Profile</div>
+        <div class="dropdown-item" onclick="goTo('home.html', {view:'discover'})">🔍 Find People</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" onclick="doLogout()">🚪 Log Out</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="profile-root" style="margin-top:58px;margin-bottom:var(--player-h);padding:0 22px 30px;max-width:900px">
+
+  <div class="profile-cover" id="profile-cover"></div>
+
+  <div class="profile-header">
+    <div class="avatar profile-avatar" id="profile-avatar"></div>
+    <div class="profile-info">
+      <div class="profile-name" id="profile-name">Loading…</div>
+      <div class="profile-username" id="profile-username"></div>
+      <div class="profile-bio hidden" id="profile-bio"></div>
+      <div class="profile-stats">
+        <div class="profile-stat" id="stat-followers">0 Followers</div>
+        <div class="profile-stat" id="stat-following">0 Following</div>
+        <div class="profile-stat" id="stat-songs">0 Songs</div>
+      </div>
+    </div>
+    <div class="profile-actions" id="profile-actions"></div>
+  </div>
+
+  <div class="profile-tabs">
+    <div class="profile-tab active" data-tab="playlists" onclick="switchProfileTab('playlists')">📋 Playlists</div>
+    <div class="profile-tab" data-tab="songs" onclick="switchProfileTab('songs')">🎵 Uploaded Songs</div>
+  </div>
+
+  <div class="profile-tab-panel" data-tab="playlists">
+    <div id="profile-playlists-grid" class="playlist-grid"></div>
+  </div>
+
+  <div class="profile-tab-panel hidden" data-tab="songs">
+    <div class="list-hdr"><span>#</span><span></span><span>Title</span><span>Album</span><span>Duration</span><span></span><span></span></div>
+    <div id="profile-songs-list" class="song-list"></div>
+  </div>
+
+</main>
+
+<!-- MINI PLAYER (for playing songs from profile) -->
+<div id="player">
+  <div class="pinfo">
+    <div class="pthumb" id="pThumb">🎵</div>
+    <div style="overflow:hidden">
+      <div class="ptitle"  id="pTitle">No song playing</div>
+      <div class="partist" id="pArtist">Pick a song above ↑</div>
+    </div>
+    <span class="plike" id="pLike" onclick="toggleLikeCurrentSong()">♡</span>
+  </div>
+  <div class="pctrl">
+    <div class="pbtns">
+      <button class="pbtn" onclick="Player.prev()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+      </button>
+      <button class="pbtn play-btn" onclick="Player.togglePlay()">
+        <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="pbtn" onclick="Player.next()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+    </div>
+    <div class="prog-row">
+      <span class="ptime" id="curTime">0:00</span>
+      <div class="prog-track" onclick="seekClick(event)"><div class="prog-fill" id="progFill"></div></div>
+      <span class="ptime" id="durTime">0:00</span>
+    </div>
+  </div>
+  <div class="pvol">
+    <input id="volSlider" type="range" class="vol" min="0" max="100" value="80" oninput="Player.setVolume(this.value/100)" />
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="modal-edit-profile">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEditProfileModal()">✕</button>
+    <h2>✏️ Edit Profile</h2>
+    <div class="ff" style="margin-bottom:12px"><label>Display Name</label><input id="edit-displayName" type="text" /></div>
+    <div class="ff" style="margin-bottom:12px"><label>Username</label><input id="edit-username" type="text" /></div>
+    <div class="ff" style="margin-bottom:12px"><label>Bio</label><textarea id="edit-bio" maxlength="200" placeholder="Tell people about yourself…"></textarea></div>
+    <div class="fg">
+      <div class="ff"><label>Avatar</label><input id="edit-avatar" type="file" accept="image/*" onchange="handleAvatarSelect(this)" /></div>
+      <div class="ff"><label>Cover Image</label><input id="edit-cover" type="file" accept="image/*" onchange="handleProfileCoverSelect(this)" /></div>
+    </div>
+    <div class="fa">
+      <button class="btn btn-p" onclick="submitEditProfile()">Save Changes</button>
+      <button class="btn btn-g" onclick="closeEditProfileModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/socket.js"></script>
+<script src="../js/player.js"></script>
+<script src="../js/songs.js"></script>
+<script src="../js/playlists.js"></script>
+<script src="../js/profile.js"></script>
+<script>
+  function toggleUserDropdown() { qs('#user-dropdown').classList.toggle('open'); }
+  async function doLogout() {
+    try { await api.auth.logout(); } catch (_) {}
+    Auth.clearToken(); localStorage.removeItem('mt_user');
+    window.location.href = 'index.html';
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-chip')) qs('#user-dropdown')?.classList.remove('open');
+  });
+  function seekClick(e) { Player.seekTo(e.offsetX / e.currentTarget.offsetWidth); }
+  function updatePlayIcon(playing) {
+    qs('#playIcon').innerHTML = playing
+      ? `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`
+      : `<path d="M8 5v14l11-7z"/>`;
+  }
+  window.addEventListener('DOMContentLoaded', async () => {
+    Player.init();
+    Player.onChange((type) => {
+      const song = Player.currentSong();
+      if (type === 'progress') {
+        const audio = Player.audio;
+        if (audio.duration) {
+          qs('#progFill').style.width = (audio.currentTime/audio.duration*100) + '%';
+          qs('#curTime').textContent = fmtTime(audio.currentTime);
+          qs('#durTime').textContent = fmtTime(audio.duration);
+        }
+        return;
+      }
+      if (!song) return;
+      qs('#pThumb').style.backgroundImage = song.coverUrl ? `url('${song.coverUrl}')` : '';
+      qs('#pThumb').textContent = song.coverUrl ? '' : (song.emoji || '🎵');
+      qs('#pTitle').textContent = song.title;
+      qs('#pArtist').textContent = song.artist;
+      updatePlayerLikeIcon(song.likes?.includes(currentUser._id));
+      updatePlayIcon(Player.getState().isPlaying);
+    });
+    qs('#user-chip').innerHTML = `${avatarHTML(Auth.getUser(), 26)}<span>${escHtml(Auth.getUser().username)}</span>`;
+    await initProfilePage();
+  });
+</script>
+</body>
+</html>

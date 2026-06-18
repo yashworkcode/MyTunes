@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyTunes — Messages</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/app.css" />
+  <link rel="stylesheet" href="../css/calls.css" />
+  <style>
+    .msgs-layout { display: grid; grid-template-columns: 320px 1fr; gap: 0; height: calc(100vh - 58px - var(--player-h)); }
+    .msgs-sidebar { border-right: 1px solid var(--border); padding: 18px 14px; overflow-y: auto; }
+    .msgs-main { padding: 18px 24px; display: flex; flex-direction: column; }
+    @media (max-width: 800px) {
+      .msgs-layout { grid-template-columns: 1fr; }
+      .msgs-sidebar.has-target { display: none; }
+      .msgs-main.no-target { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<audio id="audioEl"></audio>
+
+<header id="topbar">
+  <div class="logo" onclick="goTo('home.html')">♪ MyTunes</div>
+  <div style="flex:1"></div>
+  <div class="topbar-right">
+    <button class="tbtn" onclick="goTo('home.html')">🏠 Home</button>
+    <div style="position:relative">
+      <div class="user-chip" id="user-chip" onclick="toggleUserDropdown()"></div>
+      <div class="dropdown" id="user-dropdown">
+        <div class="dropdown-item" onclick="goTo('profile.html')">👤 My Profile</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" onclick="doLogout()">🚪 Log Out</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="msgs-layout" style="margin-top:58px;margin-bottom:var(--player-h)">
+  <div class="msgs-sidebar" id="msgs-sidebar">
+    <div class="sec-title" style="font-size:17px;margin-bottom:14px">💬 Messages</div>
+    <div id="contact-list" class="chat-list"></div>
+  </div>
+
+  <div class="msgs-main" id="msgs-main">
+    <div class="empty" id="no-thread-empty"><big>💬</big>Select a conversation to start chatting.</div>
+    <div class="dm-wrap hidden" id="dm-wrap">
+      <div class="dm-header" id="dm-header"></div>
+      <div class="dm-messages" id="dm-msgs"></div>
+      <div class="typing-indicator hidden" id="typing-indicator">
+        <div class="typing-dots"><span></span><span></span><span></span></div> typing…
+      </div>
+      <div class="dm-input-row">
+        <input id="dm-input" type="text" placeholder="Type a message…"
+               oninput="handleDMTyping()"
+               onkeydown="if(event.key==='Enter')sendDMMessage()" />
+        <button class="send-btn" onclick="sendDMMessage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mini player for shared songs -->
+<div id="player">
+  <div class="pinfo">
+    <div class="pthumb" id="pThumb">🎵</div>
+    <div style="overflow:hidden">
+      <div class="ptitle"  id="pTitle">No song playing</div>
+      <div class="partist" id="pArtist">—</div>
+    </div>
+  </div>
+  <div class="pctrl">
+    <div class="pbtns">
+      <button class="pbtn play-btn" onclick="Player.togglePlay()">
+        <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>
+    <div class="prog-row">
+      <span class="ptime" id="curTime">0:00</span>
+      <div class="prog-track" onclick="seekClick(event)"><div class="prog-fill" id="progFill"></div></div>
+      <span class="ptime" id="durTime">0:00</span>
+    </div>
+  </div>
+  <div class="pvol">
+    <input id="volSlider" type="range" class="vol" min="0" max="100" value="80" oninput="Player.setVolume(this.value/100)" />
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="incoming-call-banner"></div>
+<div id="call-overlay">
+  <div class="call-stage" id="call-stage"></div>
+  <div class="call-controls" id="call-controls"></div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/socket.js"></script>
+<script src="../js/player.js"></script>
+<script src="../js/songs.js"></script>
+<script src="../js/messages.js"></script>
+<script src="../js/calls.js"></script>
+<script>
+  function toggleUserDropdown() { qs('#user-dropdown').classList.toggle('open'); }
+  async function doLogout() {
+    try { await api.auth.logout(); } catch (_) {}
+    Auth.clearToken(); localStorage.removeItem('mt_user');
+    window.location.href = 'index.html';
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-chip')) qs('#user-dropdown')?.classList.remove('open');
+  });
+  function seekClick(e) { Player.seekTo(e.offsetX / e.currentTarget.offsetWidth); }
+  function updatePlayIcon(playing) {
+    qs('#playIcon').innerHTML = playing
+      ? `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`
+      : `<path d="M8 5v14l11-7z"/>`;
+  }
+
+  async function openThread(userId) {
+    qs('#no-thread-empty').classList.add('hidden');
+    qs('#dm-wrap').classList.remove('hidden');
+    qs('#msgs-sidebar').classList.add('has-target');
+    qs('#msgs-main').classList.remove('no-target');
+    await loadDMThread(userId);
+    await loadContactsList(qs('#contact-list')); // refresh unread counts
+  }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    if (!requireAuth()) return;
+    currentUser = Auth.getUser();
+    Player.init();
+    Player.onChange((type) => {
+      const song = Player.currentSong();
+      if (type === 'progress') {
+        const audio = Player.audio;
+        if (audio.duration) {
+          qs('#progFill').style.width = (audio.currentTime/audio.duration*100) + '%';
+          qs('#curTime').textContent = fmtTime(audio.currentTime);
+          qs('#durTime').textContent = fmtTime(audio.duration);
+        }
+        return;
+      }
+      if (!song) return;
+      qs('#pThumb').style.backgroundImage = song.coverUrl ? `url('${song.coverUrl}')` : '';
+      qs('#pThumb').textContent = song.coverUrl ? '' : (song.emoji || '🎵');
+      qs('#pTitle').textContent = song.title;
+      qs('#pArtist').textContent = song.artist;
+      updatePlayIcon(Player.getState().isPlaying);
+    });
+
+    qs('#user-chip').innerHTML = `${avatarHTML(currentUser, 26)}<span>${escHtml(currentUser.username)}</span>`;
+
+    initSocket();
+    wireMessageSocketEvents();
+    wireCallSocketEvents();
+
+    await loadContactsList(qs('#contact-list'));
+
+    const withUser = getParam('with');
+    if (withUser) await openThread(withUser);
+
+    // re-bind contact clicks to use SPA-style thread switch instead of full nav
+    qs('#contact-list').addEventListener('click', (e) => {
+      const item = e.target.closest('.chat-item');
+      if (!item) return;
+      e.preventDefault();
+      const match = item.getAttribute('onclick')?.match(/with:'([^']+)'/);
+      if (match) { history.pushState({}, '', `?with=${match[1]}`); openThread(match[1]); }
+    }, true);
+  });
+</script>
+</body>
+</html>
