@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../css/global.css" />
   <link rel="stylesheet" href="../css/auth.css" />
 </head>
+
 <body class="auth-body">
 
   <div class="login-wrap">
@@ -15,7 +16,10 @@
     <div class="login-art">
       <div class="login-art-notes">🎵</div>
       <div class="login-art-logo">♪ MyTunes</div>
-      <div class="login-art-sub">Your music, shared with everyone.<br>Upload songs, build playlists, connect, and call your friends.</div>
+      <div class="login-art-sub">
+        Your music, shared with everyone.<br>
+        Upload songs, build playlists, connect, and call your friends.
+      </div>
       <div class="login-art-feats">
         <span>🔒 End-to-end encrypted messages</span>
         <span>📞 Voice &amp; video calls</span>
@@ -29,62 +33,63 @@
       <p>Sign in to listen, share, and connect.</p>
 
       <div class="tab-row">
-        <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Sign In</button>
-        <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Register</button>
+        <button class="tab-btn active" id="tab-login">Sign In</button>
+        <button class="tab-btn" id="tab-register">Register</button>
       </div>
 
       <div id="auth-err" class="login-err"></div>
 
-<!-- Login fields -->
-<div id="login-fields">
-  <div class="login-field">
-    <label>Email</label>
-    <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
-  </div>
+      <!-- LOGIN -->
+      <div id="login-fields">
+        <div class="login-field">
+          <label>Email</label>
+          <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
 
-  <div class="login-field">
-    <label>Password</label>
-    <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
-  </div>
+        <div class="login-field">
+          <label>Password</label>
+          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
 
-  <button class="login-submit" id="login-btn">Sign In</button>
+        <button class="login-submit" id="login-btn">Sign In</button>
 
-  <div class="login-footer">
-    Don't have an account?
-    <a href="#" id="register-link" style="color:var(--accent)">Register</a>
-  </div>
-</div>
+        <div class="login-footer">
+          Don't have an account?
+          <a href="#" id="register-link" style="color:var(--accent)">Register</a>
+        </div>
+      </div>
 
-<!-- Register fields -->
-<div id="register-fields" class="hidden">
-  <div class="login-field">
-    <label>Username</label>
-    <input id="reg-user" type="text" placeholder="e.g. music_lover42" autocomplete="off" />
-  </div>
+      <!-- REGISTER -->
+      <div id="register-fields" class="hidden">
+        <div class="login-field">
+          <label>Username</label>
+          <input id="reg-user" type="text" placeholder="e.g. music_lover42" autocomplete="off" />
+        </div>
 
-  <div class="login-field">
-    <label>Email</label>
-    <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" />
-  </div>
+        <div class="login-field">
+          <label>Email</label>
+          <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
 
-  <div class="login-field">
-    <label>Password</label>
-    <input id="reg-pass" type="password" placeholder="at least 6 characters" />
-  </div>
+        <div class="login-field">
+          <label>Password</label>
+          <input id="reg-pass" type="password" placeholder="at least 6 characters" />
+        </div>
 
-  <div class="login-field">
-    <label>Confirm Password</label>
-    <input id="reg-pass2" type="password" placeholder="repeat password" />
-  </div>
+        <div class="login-field">
+          <label>Confirm Password</label>
+          <input id="reg-pass2" type="password" placeholder="repeat password" />
+        </div>
 
-  <button class="login-submit" id="register-btn">Create Account</button>
+        <button class="login-submit" id="register-btn">Create Account</button>
 
-  <div class="login-footer">
-    Already have an account?
-    <a href="#" id="login-link" style="color:var(--accent)">Sign In</a>
-  </div>
-</div>
+        <div class="login-footer">
+          Already have an account?
+          <a href="#" id="login-link" style="color:var(--accent)">Sign In</a>
+        </div>
+      </div>
 
+    </div>
   </div>
 
   <div id="toast"></div>
@@ -92,6 +97,8 @@
   <script src="../js/utils.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
+
+  <!-- ✅ FIXED JS -->
   <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -101,29 +108,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const registerLink = document.getElementById("register-link");
   const loginLink = document.getElementById("login-link");
 
+  const tabLogin = document.getElementById("tab-login");
+  const tabRegister = document.getElementById("tab-register");
+
   const pass = document.getElementById("login-pass");
   const regPass2 = document.getElementById("reg-pass2");
 
-  function doLogin() {
-    console.log("Login clicked");
-    // your login API code here
-  }
-
-  function doRegister() {
-    console.log("Register clicked");
-    // your register API code here
-  }
-
   function switchTab(tab) {
-    console.log("Switch tab:", tab);
-
     document.getElementById("login-fields").classList.toggle("hidden", tab !== "login");
     document.getElementById("register-fields").classList.toggle("hidden", tab !== "register");
   }
 
+  function doLogin() {
+    console.log("Login clicked");
+  }
+
+  function doRegister() {
+    console.log("Register clicked");
+  }
+
+  // Buttons
   loginBtn.addEventListener("click", doLogin);
   registerBtn.addEventListener("click", doRegister);
 
+  // Tabs (IMPORTANT FIX)
+  tabLogin.addEventListener("click", () => switchTab("login"));
+  tabRegister.addEventListener("click", () => switchTab("register"));
+
+  // Links
   registerLink.addEventListener("click", (e) => {
     e.preventDefault();
     switchTab("register");
@@ -134,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     switchTab("login");
   });
 
+  // Enter key support
   pass.addEventListener("keydown", (e) => {
     if (e.key === "Enter") doLogin();
   });
@@ -143,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
-</script>
+  </script>
+
 </body>
 </html>
