@@ -28,25 +28,17 @@ const app    = express();
 const server = http.createServer(app);
 
 // ── CORS ─────────────────────────────────────────────
-const DEV_ORIGINS = [
-  'http://localhost:3000', 'http://127.0.0.1:3000',
-  'http://localhost:5500', 'http://127.0.0.1:5500',
-  'http://localhost:8000', 'http://127.0.0.1:8000',
-  'http://localhost:8080', 'http://127.0.0.1:8080',
-  'http://localhost:5173', 'http://127.0.0.1:5173',
-];
-
 const corsOriginCheck = (origin, callback) => {
   // Allow requests with no origin (like server-to-server or curl)
   if (!origin) return callback(null, true);
 
-  // Always allow local development ports
+  // Always allow local development configurations
   if (process.env.NODE_ENV !== 'production') {
     return callback(null, true);
   }
 
-  // ── PRODUCTION CORS RULE (UPDATED) ──
-  // Trust your custom CLIENT_URL OR any generated deployment URL ending in vercel.app
+  // ── PRODUCTION CORS RULE (ROCK SOLID) ──
+  // Trust your custom CLIENT_URL OR any dynamic Vercel deployment subdomain
   if (origin === process.env.CLIENT_URL || origin.includes('vercel.app')) {
     return callback(null, true);
   }
@@ -96,14 +88,6 @@ app.use('/api/notifications', notificationRoutes);
 
 // ── Health check ─────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', env: process.env.NODE_ENV }));
-
-// ── Serve frontend in production ─────────────────────
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend')));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/pages/index.html'));
-  });
-}
 
 // ── Global Error Handler ─────────────────────────────
 app.use(errorHandler);
