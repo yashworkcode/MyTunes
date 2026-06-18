@@ -10,7 +10,7 @@ const BACKEND_PORT = 5000;
 
 const isLocalDev = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
 
-// Appended /api to the production URL, and added a dynamic fallback for local testing
+//Appended /api to the production URL, and added a dynamic fallback for local testing
 const API_BASE = isLocalDev 
   ? `http://localhost:${BACKEND_PORT}/api` 
   : "https://mytunes-kk3n.onrender.com/api";
