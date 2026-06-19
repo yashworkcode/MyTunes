@@ -131,8 +131,17 @@ async function sendDMMessage() {
 
   const sock = getSocket();
   if (sock) {
+    // 1. Emit to server over socket
     sock.emit('send_message', { recipientId: dmTarget._id, content: text });
     sock.emit('typing_stop', { recipientId: dmTarget._id });
+    
+    // 🔥 FIXED: Append to screen instantly so you don't have to refresh!
+    appendDMMessage({
+      senderId: 'mine', // or your current user's ID variable if your function checks for it
+      content: text,
+      createdAt: new Date().toISOString()
+    });
+
   } else {
     try {
       const res = await api.messages.send(dmTarget._id, text);

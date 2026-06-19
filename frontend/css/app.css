@@ -421,9 +421,10 @@ input[type=range].vol::-webkit-slider-thumb {
 }
 
 /* ── RESPONSIVE ── */
+/* ── RESPONSIVE ── */
 @media (max-width: 640px) {
   #sidebar { display: none; }
-  #main { margin-left: 0; }
+  #main { margin-left: 0; padding: 16px 12px; } /* Reduced padding stops phone layout from looking cramped */
   .song-row { grid-template-columns: 42px 1fr 40px; }
   .snum, .salb, .sdur { display: none; }
   .list-hdr { display: none; }
@@ -432,4 +433,54 @@ input[type=range].vol::-webkit-slider-thumb {
   #player { grid-template-columns: 1fr auto; }
   .playlist-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
   .notif-panel { width: calc(100vw - 24px); right: -8px; }
+
+  /* 📲 NEW PHONE FIXES ADDED HERE */
+  
+  /* 1. Shrinks the massive profile area and centers it cleanly on mobile screen */
+  .profile-cover {
+    height: 120px; 
+  }
+  .profile-header {
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
+    margin-top: -48px;   
+    gap: 10px;
+  }
+  .profile-avatar {
+    width: 84px;        
+    height: 84px;
+    font-size: 26px;
+  }
+  .profile-stats {
+    justify-content: center; 
+    gap: 16px;
+  }
+  .profile-actions {
+    width: 100%;
+    justify-content: center; 
+  }
+
+  /* 2. Optimizes chat messages view on tight mobile screens */
+  .dm-wrap {
+    height: calc(100vh - 58px - var(--player-h) - 20px); 
+  }
+  .msg {
+    max-width: 90%; 
+  }
+  .msg-bubble {
+    font-size: 13px; 
+    padding: 8px 12px;
+  }
+
+  /* 3. Scales down the header items so they don't clip or overlap on small displays */
+  #topbar {
+    padding: 0 12px; 
+  }
+  .srch {
+    max-width: 140px; 
+  }
+  .logo {
+    font-size: 17px;  
+  }
 }
