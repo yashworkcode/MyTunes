@@ -4,7 +4,7 @@
 
 // Redirect to app if already logged in
 if (Auth.isLoggedIn()) {
-  window.location.href = 'pages/home.html';
+  window.location.href = '/pages/home.html';
 }
 
 function switchTab(tab) {
@@ -26,15 +26,25 @@ async function doLogin() {
   const errEl = qs('#auth-err');
   errEl.textContent = '';
 
-  if (!email || !pass) { errEl.textContent = 'Please fill in all fields.'; return; }
+  if (!email || !pass) {
+    errEl.textContent = 'Please fill in all fields.';
+    return;
+  }
 
   const btn = qs('#login-btn');
   setLoading(btn, true, 'Signing in');
+
   try {
-    const res = await api.auth.login({ email, password: pass });
+    const res = await api.auth.login({
+      email,
+      password: pass
+    });
+
     Auth.setToken(res.token);
     Auth.setUser(res.user);
-    window.location.href = 'pages/home.html';
+
+    window.location.href = '/pages/home.html';
+
   } catch (err) {
     errEl.textContent = err.message;
   } finally {
@@ -48,19 +58,39 @@ async function doRegister() {
   const pass     = qs('#reg-pass').value;
   const pass2    = qs('#reg-pass2').value;
   const errEl    = qs('#auth-err');
+
   errEl.textContent = '';
 
-  if (!username || !email || !pass) { errEl.textContent = 'Please fill in all fields.'; return; }
-  if (pass !== pass2) { errEl.textContent = "Passwords don't match."; return; }
-  if (pass.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (!username || !email || !pass) {
+    errEl.textContent = 'Please fill in all fields.';
+    return;
+  }
+
+  if (pass !== pass2) {
+    errEl.textContent = "Passwords don't match.";
+    return;
+  }
+
+  if (pass.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
 
   const btn = qs('#register-btn');
   setLoading(btn, true, 'Creating account');
+
   try {
-    const res = await api.auth.register({ username, email, password: pass });
+    const res = await api.auth.register({
+      username,
+      email,
+      password: pass
+    });
+
     Auth.setToken(res.token);
     Auth.setUser(res.user);
-    window.location.href = 'pages/home.html';
+
+    window.location.href = '/pages/home.html';
+
   } catch (err) {
     errEl.textContent = err.message;
   } finally {
@@ -68,21 +98,30 @@ async function doRegister() {
   }
 }
 
-// ✅ ATTACH EVENT LISTENERS SAFELY IN THIS EXTERNAL FILE
-document.addEventListener("DOMContentLoaded", () => {
-  // Tabs switching
+// Attach event listeners
+document.addEventListener('DOMContentLoaded', () => {
+
   qs('#tab-login').addEventListener('click', () => switchTab('login'));
   qs('#tab-register').addEventListener('click', () => switchTab('register'));
-  
-  // Footer text links switching
-  qs('#register-link').addEventListener('click', (e) => { e.preventDefault(); switchTab('register'); });
-  qs('#login-link').addEventListener('click', (e) => { e.preventDefault(); switchTab('login'); });
 
-  // Submission buttons
+  qs('#register-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    switchTab('register');
+  });
+
+  qs('#login-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    switchTab('login');
+  });
+
   qs('#login-btn').addEventListener('click', doLogin);
   qs('#register-btn').addEventListener('click', doRegister);
 
-  // Enter key behaviors
-  qs('#login-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
-  qs('#reg-pass2').addEventListener('keydown', (e) => { if (e.key === 'Enter') doRegister(); });
+  qs('#login-pass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  qs('#reg-pass2').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doRegister();
+  });
 });
