@@ -4,7 +4,7 @@
 
 const SOCKET_URL = isLocalDev
   ? `http://localhost:${BACKEND_PORT}`
-  : window.location.origin;
+  : 'https://mytunes-kk3n.onrender.com';
 
 let socket = null;
 

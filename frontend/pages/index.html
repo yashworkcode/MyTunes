@@ -4,18 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MyTunes — Sign In</title>
+  
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-x4d6HDPLO+4Q0I9rLRxwwnrsSqwZxgWFv88/W+yx7JQ=';">
+
   <link rel="stylesheet" href="../css/global.css" />
   <link rel="stylesheet" href="../css/auth.css" />
 </head>
+
 <body class="auth-body">
 
   <div class="login-wrap">
 
-    <!-- Left art panel -->
     <div class="login-art">
       <div class="login-art-notes">🎵</div>
       <div class="login-art-logo">♪ MyTunes</div>
-      <div class="login-art-sub">Your music, shared with everyone.<br>Upload songs, build playlists, connect, and call your friends.</div>
+      <div class="login-art-sub">
+        Your music, shared with everyone.<br>
+        Upload songs, build playlists, connect, and call your friends.
+      </div>
       <div class="login-art-feats">
         <span>🔒 End-to-end encrypted messages</span>
         <span>📞 Voice &amp; video calls</span>
@@ -23,57 +29,66 @@
       </div>
     </div>
 
-    <!-- Right form panel -->
     <div class="login-form-side">
       <h2>Welcome back</h2>
       <p>Sign in to listen, share, and connect.</p>
 
       <div class="tab-row">
-        <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Sign In</button>
-        <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Register</button>
+        <button class="tab-btn active" id="tab-login">Sign In</button>
+        <button class="tab-btn" id="tab-register">Register</button>
       </div>
 
       <div id="auth-err" class="login-err"></div>
 
-      <!-- Login fields -->
       <div id="login-fields">
         <div class="login-field">
           <label>Email</label>
           <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
         </div>
+
         <div class="login-field">
           <label>Password</label>
-          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"
-                 onkeydown="if(event.key==='Enter')doLogin()" />
+          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
         </div>
-        <button class="login-submit" id="login-btn" onclick="doLogin()">Sign In</button>
-        <div class="login-footer">Don't have an account? <a href="#" onclick="switchTab('register');return false" style="color:var(--accent)">Register</a></div>
+
+        <button class="login-submit" id="login-btn">Sign In</button>
+
+        <div class="login-footer">
+          Don't have an account?
+          <a href="#" id="register-link" style="color:var(--accent)">Register</a>
+        </div>
       </div>
 
-      <!-- Register fields -->
       <div id="register-fields" class="hidden">
         <div class="login-field">
           <label>Username</label>
           <input id="reg-user" type="text" placeholder="e.g. music_lover42" autocomplete="off" />
         </div>
+
         <div class="login-field">
           <label>Email</label>
           <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" />
         </div>
+
         <div class="login-field">
           <label>Password</label>
           <input id="reg-pass" type="password" placeholder="at least 6 characters" />
         </div>
+
         <div class="login-field">
           <label>Confirm Password</label>
-          <input id="reg-pass2" type="password" placeholder="repeat password"
-                 onkeydown="if(event.key==='Enter')doRegister()" />
+          <input id="reg-pass2" type="password" placeholder="repeat password" />
         </div>
-        <button class="login-submit" id="register-btn" onclick="doRegister()">Create Account</button>
-        <div class="login-footer">Already have an account? <a href="#" onclick="switchTab('login');return false" style="color:var(--accent)">Sign In</a></div>
-      </div>
-    </div>
 
+        <button class="login-submit" id="register-btn">Create Account</button>
+
+        <div class="login-footer">
+          Already have an account?
+          <a href="#" id="login-link" style="color:var(--accent)">Sign In</a>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <div id="toast"></div>
@@ -81,5 +96,65 @@
   <script src="../js/utils.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const loginBtn = document.getElementById("login-btn");
+  const registerBtn = document.getElementById("register-btn");
+
+  const registerLink = document.getElementById("register-link");
+  const loginLink = document.getElementById("login-link");
+
+  const tabLogin = document.getElementById("tab-login");
+  const tabRegister = document.getElementById("tab-register");
+
+  const pass = document.getElementById("login-pass");
+  const regPass2 = document.getElementById("reg-pass2");
+
+  function switchTab(tab) {
+    document.getElementById("login-fields").classList.toggle("hidden", tab !== "login");
+    document.getElementById("register-fields").classList.toggle("hidden", tab !== "register");
+  }
+
+  function doLogin() {
+    console.log("Login clicked");
+  }
+
+  function doRegister() {
+    console.log("Register clicked");
+  }
+
+  // Buttons
+  loginBtn.addEventListener("click", doLogin);
+  registerBtn.addEventListener("click", doRegister);
+
+  // Tabs (IMPORTANT FIX)
+  tabLogin.addEventListener("click", () => switchTab("login"));
+  tabRegister.addEventListener("click", () => switchTab("register"));
+
+  // Links
+  registerLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchTab("register");
+  });
+
+  loginLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchTab("login");
+  });
+
+  // Enter key support
+  pass.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doLogin();
+  });
+
+  regPass2.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doRegister();
+  });
+
+});
+  </script>
+
 </body>
 </html>
