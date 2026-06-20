@@ -2,6 +2,7 @@
    ║   MyTunes — Socket.io Client             ║
    ╚══════════════════════════════════════════╝ */
 
+import { io } from "socket.io-client";
 const SOCKET_URL = isLocalDev
   ? `http://localhost:${BACKEND_PORT}`
   : 'https://mytunes-kk3n.onrender.com';
